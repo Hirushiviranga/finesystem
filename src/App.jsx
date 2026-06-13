@@ -48,7 +48,11 @@ function App() {
   // Proceed to payment form
   const handleProceedToPayment = (amount) => {
     setPayAmount(amount);
-    setStep('payment');
+    if (loggedInCitizen) {
+      setStep('payment');
+    } else {
+      setStep('account');
+    }
   };
 
   // Handle successful mock payment
@@ -101,9 +105,30 @@ function App() {
     setStep('receipt');
   };
 
+  // Get dynamic checkout steps
+  const getStepsList = () => {
+    if (loggedInCitizen) {
+      return [
+        { id: 'search', label: 'Retrieve Ticket' },
+        { id: 'details', label: 'Fine Details' },
+        { id: 'payment', label: 'Settle Fine' },
+        { id: 'receipt', label: 'Receipt' }
+      ];
+    } else {
+      return [
+        { id: 'search', label: 'Retrieve Ticket' },
+        { id: 'details', label: 'Fine Details' },
+        { id: 'account', label: 'Account Details' },
+        { id: 'payment', label: 'Settle Fine' },
+        { id: 'receipt', label: 'Receipt' }
+      ];
+    }
+  };
+
   // Determine current active step node for visual progress indicator
   const getStepClass = (nodeStep) => {
-    const stepOrder = ['search', 'details', 'payment', 'receipt'];
+    const stepsList = getStepsList();
+    const stepOrder = stepsList.map(s => s.id);
     const currentIndex = stepOrder.indexOf(step);
     const nodeIndex = stepOrder.indexOf(nodeStep);
 
@@ -140,24 +165,14 @@ function App() {
 
       <main className="main-content">
         {/* Step Progress Bar - only show during public / checkout wizard steps */}
-        {['search', 'details', 'payment', 'receipt'].includes(step) && (
+        {['search', 'details', 'account', 'payment', 'receipt'].includes(step) && (
           <div className="steps-indicator">
-            <div className={getStepClass('search')}>
-              <div className="step-circle">1</div>
-              <span className="step-label">Retrieve Ticket</span>
-            </div>
-            <div className={getStepClass('details')}>
-              <div className="step-circle">2</div>
-              <span className="step-label">Fine Details</span>
-            </div>
-            <div className={getStepClass('payment')}>
-              <div className="step-circle">3</div>
-              <span className="step-label">Settle Fine</span>
-            </div>
-            <div className={getStepClass('receipt')}>
-              <div className="step-circle">4</div>
-              <span className="step-label">Receipt</span>
-            </div>
+            {getStepsList().map((s, idx) => (
+              <div key={s.id} className={getStepClass(s.id)}>
+                <div className="step-circle">{idx + 1}</div>
+                <span className="step-label">{s.label}</span>
+              </div>
+            ))}
           </div>
         )}
 
@@ -231,6 +246,18 @@ function App() {
               }
             }}
             onViewReceipt={handleViewPaidReceipt}
+          />
+        )}
+
+        {step === 'account' && activeFine && (
+          <CitizenLogin
+            onLoginSuccess={(citizen) => {
+              setLoggedInCitizen(citizen);
+              setStep('payment');
+            }}
+            onCancel={() => setStep('details')}
+            activeFine={activeFine}
+            isCheckout={true}
           />
         )}
 

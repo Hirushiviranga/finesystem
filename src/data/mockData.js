@@ -1,4 +1,4 @@
-export const mockCitizens = [
+const defaultCitizens = [
   {
     licenseNumber: "B1234567",
     password: "password123",
@@ -14,6 +14,33 @@ export const mockCitizens = [
     vehicleNumber: "WP CAD-9876"
   }
 ];
+
+// Load from LocalStorage if exists, else use default
+const getInitialCitizens = () => {
+  const saved = localStorage.getItem('citizens_db');
+  if (saved) {
+    try {
+      return JSON.parse(saved);
+    } catch (e) {
+      console.error("Error parsing citizens from local storage:", e);
+    }
+  }
+  return defaultCitizens;
+};
+
+export const mockCitizens = getInitialCitizens();
+
+export const registerCitizen = (citizenData) => {
+  const existing = mockCitizens.find(
+    c => c.licenseNumber.trim().toUpperCase() === citizenData.licenseNumber.trim().toUpperCase()
+  );
+  if (existing) {
+    return { success: false, message: "A citizen with this license number is already registered." };
+  }
+  mockCitizens.push(citizenData);
+  localStorage.setItem('citizens_db', JSON.stringify(mockCitizens));
+  return { success: true, citizen: citizenData };
+};
 
 export const mockFines = [
   {
