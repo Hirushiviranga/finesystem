@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { getFine } from '../data/mockData';
 
 export default function FineSearch({ onFineFound }) {

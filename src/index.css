@@ -150,20 +150,37 @@ button, input, select {
     color: black !important;
   }
   
-  #root > *:not(.printable-area) {
+  /* Hide all non-printable elements */
+  .header, 
+  .steps-indicator, 
+  .app-footer, 
+  .receipt-actions, 
+  .success-banner, 
+  .license-sms-alert,
+  .citizen-portal-invite,
+  .faq-section {
     display: none !important;
   }
   
-  .printable-area {
+  /* Reset container layout for clean page rendering */
+  .app-container, .main-content, #root {
     display: block !important;
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-    margin: 0;
-    padding: 0;
-    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: 100% !important;
+    width: 100% !important;
     box-shadow: none !important;
     background: transparent !important;
+  }
+
+  .printable-area {
+    display: block !important;
+    width: 100% !important;
+    max-width: 640px !important;
+    margin: 0 auto !important;
+    border: none !important;
+    box-shadow: none !important;
+    background: #ffffff !important;
+    position: relative !important;
   }
 }

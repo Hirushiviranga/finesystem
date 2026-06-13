@@ -1,3 +1,20 @@
+export const mockCitizens = [
+  {
+    licenseNumber: "B1234567",
+    password: "password123",
+    fullName: "Hirushi Perera",
+    email: "hirushi@example.com",
+    vehicleNumber: "WP CAB-4567"
+  },
+  {
+    licenseNumber: "B9876543",
+    password: "password123",
+    fullName: "Aruni Fernando",
+    email: "aruni@example.com",
+    vehicleNumber: "WP CAD-9876"
+  }
+];
+
 export const mockFines = [
   {
     referenceNumber: "REF-9876-01",
@@ -52,6 +69,60 @@ export const mockFines = [
     paidAt: "2026-06-05 16:42",
     receiptNumber: "REC-8849-01",
     paymentMethod: "Visa ending in 4242",
+  },
+  {
+    referenceNumber: "REF-4422-01",
+    categoryCode: "CAT-A01",
+    driverName: "Aruni Fernando",
+    licenseNumber: "B9876543",
+    vehicleNumber: "WP CAD-9876",
+    violation: "Exceeding Speed Limit (75km/h in a 50km/h Zone)",
+    violationDate: "2026-06-10",
+    violationTime: "09:40",
+    location: "Kandy Road, Kadawatha",
+    officerName: "Sergeant S. K. Wickrama",
+    officerBadge: "PS-12948",
+    baseAmount: 3000,
+    lateFee: 0,
+    dueDate: "2026-06-24",
+    status: "pending",
+  },
+  {
+    referenceNumber: "REF-4422-02",
+    categoryCode: "CAT-C12",
+    driverName: "Aruni Fernando",
+    licenseNumber: "B9876543",
+    vehicleNumber: "WP CAD-9876",
+    violation: "Not Wearing Seat Belt while Driving",
+    violationDate: "2026-05-20",
+    violationTime: "16:15",
+    location: "Parliament Road, Rajagiriya",
+    officerName: "Sergeant S. K. Wickrama",
+    officerBadge: "PS-12948",
+    baseAmount: 1000,
+    lateFee: 500,
+    dueDate: "2026-06-03",
+    status: "pending", // Overdue
+  },
+  {
+    referenceNumber: "REF-4422-03",
+    categoryCode: "CAT-B04",
+    driverName: "Aruni Fernando",
+    licenseNumber: "B9876543",
+    vehicleNumber: "WP CAD-9876",
+    violation: "Failure to obey Traffic Light Signals",
+    violationDate: "2026-05-02",
+    violationTime: "11:22",
+    location: "Union Place, Colombo 02",
+    officerName: "Inspector R. M. Bandara",
+    officerBadge: "PS-88452",
+    baseAmount: 3000,
+    lateFee: 0,
+    dueDate: "2026-05-16",
+    status: "paid",
+    paidAt: "2026-05-05 10:30",
+    receiptNumber: "REC-1283-02",
+    paymentMethod: "MasterCard ending in **** 9912",
   }
 ];
 
@@ -61,4 +132,14 @@ export const getFine = (refNum, catCode) => {
       f.referenceNumber.trim().toUpperCase() === refNum.trim().toUpperCase() &&
       f.categoryCode.trim().toUpperCase() === catCode.trim().toUpperCase()
   );
+};
+
+export const authenticateCitizen = (licenseNumber, password) => {
+  const citizen = mockCitizens.find(
+    (c) => c.licenseNumber.trim().toUpperCase() === licenseNumber.trim().toUpperCase()
+  );
+  if (citizen && citizen.password === password) {
+    return citizen;
+  }
+  return null;
 };

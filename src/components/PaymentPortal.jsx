@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 export default function PaymentPortal({ amount, onPaymentSuccess, onCancel }) {
   const [cardName, setCardName] = useState('');
@@ -11,21 +11,21 @@ export default function PaymentPortal({ amount, onPaymentSuccess, onCancel }) {
   const [isProcessing, setIsProcessing] = useState(false);
   const [processingStep, setProcessingStep] = useState('');
   const [error, setError] = useState('');
-  const [cardBrand, setCardBrand] = useState('CARD');
 
-  // Detect card brand based on card number prefix
-  useEffect(() => {
-    const cleanNum = cardNumber.replace(/\s+/g, '');
+  // Detect card brand dynamically
+  const getCardBrand = (num) => {
+    const cleanNum = num.replace(/\s+/g, '');
     if (cleanNum.startsWith('4')) {
-      setCardBrand('VISA');
+      return 'VISA';
     } else if (/^5[1-5]/.test(cleanNum)) {
-      setCardBrand('MASTERCARD');
+      return 'MASTERCARD';
     } else if (/^3[47]/.test(cleanNum)) {
-      setCardBrand('AMEX');
+      return 'AMEX';
     } else {
-      setCardBrand('CARD');
+      return 'CARD';
     }
-  }, [cardNumber]);
+  };
+  const cardBrand = getCardBrand(cardNumber);
 
   // Handle card number formatting (spaces every 4 digits)
   const handleCardNumberChange = (e) => {
@@ -77,9 +77,8 @@ export default function PaymentPortal({ amount, onPaymentSuccess, onCancel }) {
     }
     
     // Parse expiry for validity
-    const [monthStr, yearStr] = expiry.split('/');
+    const [monthStr] = expiry.split('/');
     const month = parseInt(monthStr, 10);
-    const year = parseInt(yearStr, 10);
     if (month < 1 || month > 12) {
       setError('Invalid expiry month.');
       return;
@@ -154,9 +153,31 @@ export default function PaymentPortal({ amount, onPaymentSuccess, onCancel }) {
         </svg>
         Secure Fine Settlement Portal
       </h2>
-      <p style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: '28px', textAlign: 'left' }}>
+      <p style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: '20px', textAlign: 'left' }}>
         You are settling a total fine of <strong>LKR {amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}</strong>. Fill out your debit/credit card information below.
       </p>
+
+      {/* License Release Info Notice */}
+      <div className="license-release-notice" style={{
+        background: 'var(--warning-bg)',
+        border: '1px solid var(--warning)',
+        borderRadius: 'var(--radius-md)',
+        padding: '12px 18px',
+        color: 'var(--text-h)',
+        fontSize: '13.5px',
+        textAlign: 'left',
+        marginBottom: '24px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '12px'
+      }}>
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="var(--warning)" style={{ flexShrink: 0 }}>
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+        </svg>
+        <span>
+          <strong>License Release Info:</strong> Upon payment, an SMS notification will be sent to <strong>Officer S.P. Rajapaksha</strong> to release your licence. If relevant, you may contact the officer at <a href="tel:+94774589201" style={{ color: 'var(--text-h)', fontWeight: 'bold', textDecoration: 'underline' }}><strong>+94 77 458 9201</strong></a>.
+        </span>
+      </div>
 
       <div className="payment-section">
         {/* Left Hand: Payment Inputs */}

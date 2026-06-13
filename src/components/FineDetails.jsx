@@ -1,5 +1,3 @@
-import React from 'react';
-
 export default function FineDetails({ fine, onProceed, onBack, onViewReceipt }) {
   // Check if fine is overdue based on due date (e.g. if current date is after due date, or if it already has a lateFee)
   const isOverdue = fine.status === 'pending' && (new Date(fine.dueDate) < new Date('2026-06-12') || fine.lateFee > 0);

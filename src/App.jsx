@@ -1,16 +1,22 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import Header from './components/Header';
 import FineSearch from './components/FineSearch';
 import FineDetails from './components/FineDetails';
 import PaymentPortal from './components/PaymentPortal';
 import Receipt from './components/Receipt';
+import CitizenLogin from './components/CitizenLogin';
+import CitizenDashboard from './components/CitizenDashboard';
+import { mockFines } from './data/mockData';
 import './App.css';
 
 function App() {
-  const [step, setStep] = useState('search'); // 'search' | 'details' | 'payment' | 'receipt'
+  const [fines, setFines] = useState(mockFines);
+  const [step, setStep] = useState('search'); // 'search' | 'login' | 'dashboard' | 'details' | 'payment' | 'receipt'
   const [activeFine, setActiveFine] = useState(null);
   const [paymentInfo, setPaymentInfo] = useState(null);
   const [payAmount, setPayAmount] = useState(0);
+  const [loggedInCitizen, setLoggedInCitizen] = useState(null);
+  const [paymentSource, setPaymentSource] = useState('public'); // 'public' | 'citizen'
   
   // Theme state
   const [isDarkMode, setIsDarkMode] = useState(() => {
@@ -30,7 +36,10 @@ function App() {
 
   // Handle fine retrieval from search
   const handleFineFound = (fine) => {
-    setActiveFine(fine);
+    // Find the latest state fine in case it has been paid during the current session
+    const freshFine = fines.find(f => f.referenceNumber === fine.referenceNumber);
+    setActiveFine(freshFine || fine);
+    setPaymentSource('public');
     setStep('details');
   };
 
@@ -49,15 +58,23 @@ function App() {
       ...transactionData
     };
     
-    // In a real database we would persist this, we update active state here
+    // Update the master fines state so dashboard / searches reflect this payment
+    setFines((prevFines) => 
+      prevFines.map(f => f.referenceNumber === activeFine.referenceNumber ? updatedFine : f)
+    );
+    
     setActiveFine(updatedFine);
     setPaymentInfo(transactionData);
     setStep('receipt');
   };
 
-  // Back to search screen
+  // Back to home / dashboard
   const handleReset = () => {
-    setStep('search');
+    if (loggedInCitizen) {
+      setStep('dashboard');
+    } else {
+      setStep('search');
+    }
     setActiveFine(null);
     setPaymentInfo(null);
     setPayAmount(0);
@@ -87,39 +104,122 @@ function App() {
 
   return (
     <div className="app-container">
-      <Header isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />
+      <Header 
+        isDarkMode={isDarkMode} 
+        setIsDarkMode={setIsDarkMode} 
+        loggedInCitizen={loggedInCitizen}
+        onGoToPortal={() => {
+          if (loggedInCitizen) {
+            setStep('dashboard');
+          } else {
+            setStep('login');
+          }
+        }}
+        onLogout={() => {
+          setLoggedInCitizen(null);
+          setStep('search');
+        }}
+        onGoHome={() => {
+          if (loggedInCitizen) {
+            setStep('dashboard');
+          } else {
+            setStep('search');
+          }
+        }}
+      />
 
       <main className="main-content">
-        {/* Step Progress Bar */}
-        <div className="steps-indicator">
-          <div className={getStepClass('search')}>
-            <div className="step-circle">1</div>
-            <span className="step-label">Retrieve Ticket</span>
+        {/* Step Progress Bar - only show during public / checkout wizard steps */}
+        {['search', 'details', 'payment', 'receipt'].includes(step) && (
+          <div className="steps-indicator">
+            <div className={getStepClass('search')}>
+              <div className="step-circle">1</div>
+              <span className="step-label">Retrieve Ticket</span>
+            </div>
+            <div className={getStepClass('details')}>
+              <div className="step-circle">2</div>
+              <span className="step-label">Fine Details</span>
+            </div>
+            <div className={getStepClass('payment')}>
+              <div className="step-circle">3</div>
+              <span className="step-label">Settle Fine</span>
+            </div>
+            <div className={getStepClass('receipt')}>
+              <div className="step-circle">4</div>
+              <span className="step-label">Receipt</span>
+            </div>
           </div>
-          <div className={getStepClass('details')}>
-            <div className="step-circle">2</div>
-            <span className="step-label">Fine Details</span>
-          </div>
-          <div className={getStepClass('payment')}>
-            <div className="step-circle">3</div>
-            <span className="step-label">Settle Fine</span>
-          </div>
-          <div className={getStepClass('receipt')}>
-            <div className="step-circle">4</div>
-            <span className="step-label">Receipt</span>
-          </div>
-        </div>
+        )}
 
         {/* Dynamic Views */}
         {step === 'search' && (
-          <FineSearch onFineFound={handleFineFound} />
+          <>
+            <FineSearch onFineFound={handleFineFound} />
+            
+            {/* Citizen Portal Invite Landing Card */}
+            <div className="citizen-portal-invite animate-fade-in">
+              <div className="invite-content">
+                <h4>Registered Citizen Portal</h4>
+                <p>Are you a Sri Lankan driver license holder? Sign in to view your profile, active tickets, and clean settlement records in one unified dashboard.</p>
+              </div>
+              <button type="button" className="btn-accent" onClick={() => setStep('login')} style={{ whiteSpace: 'nowrap' }}>
+                Go to Citizen Portal
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" style={{ marginLeft: '8px', transform: 'translateY(-1px)' }}>
+                  <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                </svg>
+              </button>
+            </div>
+          </>
+        )}
+
+        {step === 'login' && (
+          <CitizenLogin
+            onLoginSuccess={(citizen) => {
+              setLoggedInCitizen(citizen);
+              setStep('dashboard');
+            }}
+            onCancel={() => setStep('search')}
+          />
+        )}
+
+        {step === 'dashboard' && loggedInCitizen && (
+          <CitizenDashboard
+            citizen={loggedInCitizen}
+            fines={fines}
+            onPayFine={(fine, totalAmount) => {
+              setActiveFine(fine);
+              setPayAmount(totalAmount);
+              setPaymentSource('citizen');
+              setStep('payment');
+            }}
+            onViewDetails={(fine) => {
+              setActiveFine(fine);
+              setPaymentSource('citizen');
+              setStep('details');
+            }}
+            onViewReceipt={(fine) => {
+              setActiveFine(fine);
+              setPaymentSource('citizen');
+              handleViewPaidReceipt();
+            }}
+            onLogout={() => {
+              setLoggedInCitizen(null);
+              setStep('search');
+            }}
+          />
         )}
 
         {step === 'details' && activeFine && (
           <FineDetails
             fine={activeFine}
             onProceed={handleProceedToPayment}
-            onBack={handleReset}
+            onBack={() => {
+              if (paymentSource === 'citizen') {
+                setStep('dashboard');
+              } else {
+                handleReset();
+              }
+            }}
             onViewReceipt={handleViewPaidReceipt}
           />
         )}
@@ -128,7 +228,13 @@ function App() {
           <PaymentPortal
             amount={payAmount}
             onPaymentSuccess={handlePaymentSuccess}
-            onCancel={() => setStep('details')}
+            onCancel={() => {
+              if (paymentSource === 'citizen') {
+                setStep('dashboard');
+              } else {
+                setStep('details');
+              }
+            }}
           />
         )}
 
@@ -140,7 +246,7 @@ function App() {
           />
         )}
 
-        {/* FAQ Section: Only shown on Home/Search page to populate layout nicely */}
+        {/* FAQ Section: Only shown on Search screen for neat home page styling */}
         {step === 'search' && (
           <section className="faq-section animate-fade-in" style={{ marginTop: '20px' }}>
             <h3 className="faq-title">Frequently Asked Questions</h3>

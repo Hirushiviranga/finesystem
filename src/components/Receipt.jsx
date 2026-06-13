@@ -1,5 +1,3 @@
-import React from 'react';
-
 export default function Receipt({ fine, payment, onClose }) {
   // Check if fine was overdue
   const wasOverdue = fine.lateFee > 0 || (fine.status === 'pending' && new Date(fine.dueDate) < new Date('2026-06-12'));
@@ -19,6 +17,7 @@ export default function Receipt({ fine, payment, onClose }) {
 Receipt Number:   ${payment.receiptNumber || fine.receiptNumber}
 Payment Date:     ${payment.paidAt || fine.paidAt}
 Payment Method:   ${payment.paymentMethod || fine.paymentMethod}
+Payer Email:      ${payment.email || fine.email || 'N/A'}
 Status:           PAID / CLEARED
 --------------------------------------------------
 FINE DETAILS:
@@ -28,12 +27,19 @@ Driver Name:       ${fine.driverName}
 License Number:    ${fine.licenseNumber}
 Vehicle Number:    ${fine.vehicleNumber}
 Violation:         ${fine.violation}
+Violation Date:    ${fine.violationDate} at ${fine.violationTime}
 Location:          ${fine.location}
+Issuing Officer:   ${fine.officerName} (Badge: ${fine.officerBadge})
 --------------------------------------------------
 CHARGES BREAKDOWN:
 Base Fine:         LKR ${fine.baseAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
 Late Penalty Surcharge: LKR ${(wasOverdue ? (fine.lateFee || 1500) : 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
 TOTAL PAID:        LKR ${totalPaid.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+==================================================
+LICENSE RELEASE SMS NOTICE:
+Upon payment, an SMS notification has been sent to 
+Officer S.P. Rajapaksha (+94 77 458 9201) to 
+release your licence.
 ==================================================
 This is a digitally generated document. The Sri Lanka 
 Police traffic database has been updated, and the 
@@ -68,6 +74,31 @@ pending fine is officially cleared.
           </p>
         </div>
       )}
+
+      {/* License Release Notification */}
+      <div className="license-sms-alert" style={{
+        background: 'var(--success-bg)',
+        border: '1px solid var(--success)',
+        borderRadius: 'var(--radius-md)',
+        padding: '16px 20px',
+        color: 'var(--text-h)',
+        textAlign: 'left',
+        marginBottom: '24px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '16px',
+        boxShadow: 'var(--shadow)'
+      }}>
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="var(--success)" style={{ flexShrink: 0 }}>
+          <path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z"/>
+        </svg>
+        <div>
+          <h5 style={{ fontWeight: '800', fontSize: '14px', margin: '0 0 4px 0', color: 'var(--success)' }}>License Release Notification</h5>
+          <p style={{ fontSize: '13.5px', color: 'var(--text)', margin: 0, lineHeight: '1.5' }}>
+            Upon payment, an SMS notification will be sent to <strong>Officer S.P. Rajapaksha</strong> to release your licence. If relevant, you may contact the officer directly at <a href="tel:+94774589201" style={{ color: 'var(--success)', fontWeight: '800', textDecoration: 'underline' }}><strong>+94 77 458 9201</strong></a>.
+          </p>
+        </div>
+      </div>
 
       {/* The Receipt Document Card */}
       <div className="receipt-wrapper printable-area">
@@ -156,6 +187,10 @@ pending fine is officially cleared.
           <div className="receipt-row total">
             <span>Total Cleared</span>
             <span>LKR {totalPaid.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+          </div>
+
+          <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '12px 16px', marginTop: '16px', fontSize: '12px', color: '#475569', textAlign: 'left', lineHeight: '1.4' }}>
+            <strong>License Release Notice:</strong> Upon payment, an SMS notification will be sent to Officer S.P. Rajapaksha to release your licence. If relevant, you may contact the officer at +94 77 458 9201.
           </div>
 
           {/* Signatures & Seal */}
