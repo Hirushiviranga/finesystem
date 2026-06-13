@@ -6,6 +6,7 @@ import PaymentPortal from './components/PaymentPortal';
 import Receipt from './components/Receipt';
 import CitizenLogin from './components/CitizenLogin';
 import CitizenDashboard from './components/CitizenDashboard';
+import { PrivacyPolicy, TermsOfService, HelpDesk } from './components/InfoPages';
 import { mockFines } from './data/mockData';
 import './App.css';
 
@@ -17,6 +18,7 @@ function App() {
   const [payAmount, setPayAmount] = useState(0);
   const [loggedInCitizen, setLoggedInCitizen] = useState(null);
   const [paymentSource, setPaymentSource] = useState('public'); // 'public' | 'citizen'
+  const [lastStep, setLastStep] = useState('search');
   
   // Theme state
   const [isDarkMode, setIsDarkMode] = useState(() => {
@@ -78,6 +80,14 @@ function App() {
     setActiveFine(null);
     setPaymentInfo(null);
     setPayAmount(0);
+  };
+
+  // Navigate to Privacy, Terms, or Support
+  const handleGoToInfoStep = (targetStep) => {
+    if (!['privacy', 'terms', 'support'].includes(step)) {
+      setLastStep(step);
+    }
+    setStep(targetStep);
   };
 
   // View receipt for an already paid fine
@@ -246,6 +256,18 @@ function App() {
           />
         )}
 
+        {step === 'privacy' && (
+          <PrivacyPolicy onBack={() => setStep(lastStep)} />
+        )}
+
+        {step === 'terms' && (
+          <TermsOfService onBack={() => setStep(lastStep)} />
+        )}
+
+        {step === 'support' && (
+          <HelpDesk onBack={() => setStep(lastStep)} />
+        )}
+
         {/* FAQ Section: Only shown on Search screen for neat home page styling */}
         {step === 'search' && (
           <section className="faq-section animate-fade-in" style={{ marginTop: '20px' }}>
@@ -277,9 +299,9 @@ function App() {
       <footer className="app-footer">
         <p>&copy; 2026 Sri Lanka Police Department. All Rights Reserved.</p>
         <div style={{ marginTop: '8px' }}>
-          <a href="#privacy">Privacy Policy</a>
-          <a href="#terms">Terms of Service</a>
-          <a href="#support">Support & Help Desk</a>
+          <button type="button" onClick={() => handleGoToInfoStep('privacy')} className="footer-link-btn">Privacy Policy</button>
+          <button type="button" onClick={() => handleGoToInfoStep('terms')} className="footer-link-btn">Terms of Service</button>
+          <button type="button" onClick={() => handleGoToInfoStep('support')} className="footer-link-btn">Support & Help Desk</button>
         </div>
       </footer>
     </div>

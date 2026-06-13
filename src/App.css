@@ -1518,3 +1518,20 @@ body.dark .dashboard-profile-card {
   max-width: 480px;
   margin: 0 auto;
 }
+
+/* Footer Link Buttons styles */
+.footer-link-btn {
+  background: none;
+  border: none;
+  color: var(--primary-light);
+  font-weight: 600;
+  cursor: pointer;
+  margin: 0 14px;
+  font-size: 14px;
+  transition: var(--transition);
+}
+
+.footer-link-btn:hover {
+  color: #ffffff;
+  text-decoration: underline;
+}
